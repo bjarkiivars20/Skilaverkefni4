@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <link rel="stylesheet" type="text/css" href="indexCss.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+  <body>
+
+    <!-- Gef forminu ID til þess að geta falið það. -->
+    <!-- Hugmyndin er að geta falið chattið þanga til að username er komið -->
+    <div id="fela">
+      <ul id="messages"></ul>
+      <p id="feedback"></p>
+      <form id="form" action="">
+        <input id="input" autocomplete="off" /><button>Send</button>
+      </form>
+    
+      <!-- Form fyrir alla virku notendur -->
+      <div>
+          <h1 id="activeUsers">Listi yfir alla virku notendurna:</h1>
+          <p id="virkirNotendur"></p>
+      </div>
+    </div>
+
+    <!-- Form fyrir notendanafn, sýnilegt á undan chattinu -->
+    <div id="userForm">
+      <h1 class="centerText">Vinsamlegast veldu notendanafn:</h1>
+      <div id="userError"></div>
+      <input class="centerText" type="text" size="40" id="notendanafnGildiText" autocomplete="off">
+      <button id="userNameValue">Enter</button>
+    </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="mainJs.js"></script>
+
+  </body>
+</html> 
