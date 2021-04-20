@@ -21,15 +21,24 @@
           <h1 id="activeUsers">Listi yfir alla virku notendurna:</h1>
           <p id="virkirNotendur"></p>
       </div>
+
+      <!-- Þetta form sér um að síja út notendur -->
+      <form id="searchForm">
+        <h3>Velja hvaða notenda maður vill sjá skilaboð hjá:</h1>
+        <input id="search" autocomplete="off" /><button>Search</button>
+      </form>
+      <button id="endurstilla">Endurstilla</button>
     </div>
 
     <!-- Form fyrir notendanafn, sýnilegt á undan chattinu -->
     <div id="userForm">
-      <h1 class="centerText">Vinsamlegast veldu notendanafn:</h1>
-      <div id="userError"></div>
-      <input class="centerText" type="text" size="40" id="notendanafnGildiText" autocomplete="off">
-      <button id="userNameValue">Enter</button>
+        <h1 class="centerText">Vinsamlegast veldu notendanafn:</h1>
+        <div id="userError"></div>
+        <form id="userNameValue" action="">
+          <input type="text" size="40" id="notendanafnGildiText" autocomplete="off" /><button class="moveTheButton" type="submit" value="Submit">Enter</button>
+        <form>
     </div>
+    
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="mainJs.js"></script>

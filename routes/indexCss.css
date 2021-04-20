@@ -63,19 +63,28 @@ body {
 #userForm { 
     border:solid 1px black;
      position:absolute;
-     top:150px; 
-     left:400px;
+     top:250px; 
+     left:600px;
      height:200px; 
      width:960px; 
      margin:0 auto;
  }
 
-.centerText {
-    position: relative; 
-    left:230px;
-}
-
 #userNameValue {
     position: relative; 
     left:229px;
-}     
+}
+.centerText {
+    text-align: center;
+}
+
+#searchForm {
+    position: absolute;
+    right:1000px;
+    top:20px;
+}
+#endurstilla {
+    position:absolute;
+    right:1076px;
+    top:83px;
+}

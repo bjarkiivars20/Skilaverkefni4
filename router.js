@@ -7,10 +7,10 @@ const mongo = require("mongodb").MongoClient;
 var express = require("express");
 var usernames = [];
 
-app.use(express.static('public'));
+app.use(express.static('routes'));
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
+  res.sendFile(__dirname + "/routes/index.html");
 });
 
 app.get("/*", function(req, res){
@@ -45,7 +45,6 @@ mongo.connect("mongodb://127.0.0.1/chatserver", {useUnifiedTopology: true}, func
 				chatDB.collection("messages").find({}).toArray((err, result) => {
 					if(err) throw err;
 					socket.emit("chat_init", result);
-					//console.log(result);
 				});
 
 				//annars ef hann er ekki til, þá skilar hann socketinu
@@ -60,6 +59,12 @@ mongo.connect("mongodb://127.0.0.1/chatserver", {useUnifiedTopology: true}, func
 			io.emit("chat message",socket.nickname + " skrifaði: " + msg);
 		});
 
+		socket.on("redo", () => {
+			chatDB.collection("messages").find({}).toArray((err, result) => {
+				if(err) throw err;
+				socket.emit("redo", result);
+			});
+		});
 
 		function updateNicknames() {
 			io.sockets.emit("usernames", usernames);
@@ -82,6 +87,14 @@ mongo.connect("mongodb://127.0.0.1/chatserver", {useUnifiedTopology: true}, func
 			io.emit("typing", socket.nickname);
 		});
 
+		//Þessi sér um að taka value úr input fieldinu og sendir þá á databaseinn
+		//svo sendir hann gögnin til baka á clientinn
+		socket.on("searching", (searchValue) => {
+			var query = { user: searchValue };
+			chatDB.collection("messages").find(query).toArray(function(err, result) {
+				io.emit("searching", result);
+			})
+		});
 	});
 });
 
