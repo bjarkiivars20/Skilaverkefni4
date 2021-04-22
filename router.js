@@ -90,9 +90,10 @@ mongo.connect("mongodb://127.0.0.1/chatserver", {useUnifiedTopology: true}, func
 		//Þessi sér um að taka value úr input fieldinu og sendir þá á databaseinn
 		//svo sendir hann gögnin til baka á clientinn
 		socket.on("searching", (searchValue) => {
-			var query = { user: searchValue };
-			chatDB.collection("messages").find(query).toArray(function(err, result) {
-				io.emit("searching", result);
+			var query = { user: searchValue }; //Skilgreini nýtt var fyrir search.value úr input fieldinu
+			chatDB.collection("messages").find(query).toArray(function(err, result) { //Sendi svo query á db of næ í nafnið sem var valið
+				io.emit("searching", result); //Skila svo niðurstöðunni á clientinn
+				console.log(result);
 			})
 		});
 	});

@@ -136,27 +136,34 @@ usernameForm.addEventListener("submit", (e) => {
   notendanafnGildi();
 });
 
+
+
 //fer afstað þegar formið er submittað fyrir síju
 searchForm.addEventListener("submit", (e) => {
-  e.preventDefault(); //Kemur í veg fyrir refresh
+  $(".chatItem").remove();// Öll li í chattinu eru merkt með chatItem klasanum, þetta fjarlægjir hann, en þetta er jquery kóði
 
+  e.preventDefault(); //Kemur í veg fyrir refresh
+  
+  if(search != null) { //Ef input fieldinn er ekki tómur þá skilar hann gildi
+    search = search.value;//Tek value úr input field
+  } else { //annars skilar hann núll til þess að koma í veg fyrir uncaught error
+    search = null;
+  }
+  console.log(search);
   //Geri það þannig að takkinn fyrir endurstillingu virki bara eftir að þetta form er submittað
   endurstilla.disabled = false;
-
-  search = search.value;//Tek value úr input field
 
   socket.emit("searching", search); // sendir á serverinn value úr texta fieldinu
 
   //tek síðan gögn frá mongo og vinn með það
   socket.on("searching", (result) => { //result er niðurstaðan sem mongo skilar
-    $(".chatItem").remove();
     for(let i = 0; i < result.length; i++) { //Því mongo skilar array, þá tek ég lengdina og læt for lykkju keyra sem skilar öllum niðurstöðum
         var item_chat = document.createElement('li'); //Bý til <li>
         item_chat.textContent = result[i].user + ": " + result[i].message; //Gef li value sem er tekið frá mongo
         messages.appendChild(item_chat); //Set li sem child af ul messages
         window.scrollTo(0, document.body.scrollHeight); //Lætur skilaboðin scrolla upp
     }
-  });
+  });  
 });
 
 //Þegar það er ýtt á endurstilla takka hjá notenda síju
