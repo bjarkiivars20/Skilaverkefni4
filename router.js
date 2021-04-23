@@ -92,9 +92,9 @@ mongo.connect("mongodb://127.0.0.1/chatserver", {useUnifiedTopology: true}, func
 		socket.on("searching", (searchValue) => {
 			var query = { user: searchValue }; //Skilgreini nýtt var fyrir search.value úr input fieldinu
 			chatDB.collection("messages").find(query).toArray(function(err, result) { //Sendi svo query á db of næ í nafnið sem var valið
-				io.emit("searching", result); //Skila svo niðurstöðunni á clientinn
+				socket.emit("searching", result); //Skila svo niðurstöðunni á clientinn
 				console.log(result);
-			})
+			});
 		});
 	});
 });
