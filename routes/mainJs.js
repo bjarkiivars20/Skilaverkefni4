@@ -3,7 +3,7 @@ var socket = io();
 //Öll html id
 var fela = document.getElementById("fela");
 //Takki fyrir endurstillingur, gerði hann disabled í byrjun því hann generate'ar chat
-var endurstilla = document.getElementById("endurstilla"); endurstilla.disabled = true;
+var endurstilla = document.getElementById("endurstilla"); //endurstilla.disabled = true;
 
 var showUserForm = document.getElementById("userForm");
 var messages = document.getElementById('messages');
@@ -142,53 +142,62 @@ usernameForm.addEventListener("submit", (e) => {
 searchForm.addEventListener("submit", (e) => {
   $(".chatItem").remove();// Öll li í chattinu eru merkt með chatItem klasanum, þetta fjarlægjir hann, en þetta er jquery kóði
 
+  var searchValue = "";
+
   e.preventDefault(); //Kemur í veg fyrir refresh
   
-  if(search != null) { //Ef input fieldinn er ekki tómur þá skilar hann gildi
-    search = search.value;//Tek value úr input field
+  if(search.value != null) { //Ef input fieldinn er ekki tómur þá skilar hann gildi
+    searchValue = search.value;//Tek value úr input field
   } else { //annars skilar hann núll til þess að koma í veg fyrir uncaught error
-    search = null;
+    searchValue = null;
   }
-  console.log(search);
+  console.log(searchValue);
   //Geri það þannig að takkinn fyrir endurstillingu virki bara eftir að þetta form er submittað
   endurstilla.disabled = false;
 
-  socket.emit("searching", search); // sendir á serverinn value úr texta fieldinu
+  socket.emit("searching", searchValue); // sendir á serverinn value úr texta fieldinu
+ 
+});
 
   //tek síðan gögn frá mongo og vinn með það
   socket.on("searching", (result) => { //result er niðurstaðan sem mongo skilar
     for(let i = 0; i < result.length; i++) { //Því mongo skilar array, þá tek ég lengdina og læt for lykkju keyra sem skilar öllum niðurstöðum
         var item_chat = document.createElement('li'); //Bý til <li>
+        item_chat.classList.add("chatItem");
         item_chat.textContent = result[i].user + ": " + result[i].message; //Gef li value sem er tekið frá mongo
         messages.appendChild(item_chat); //Set li sem child af ul messages
         window.scrollTo(0, document.body.scrollHeight); //Lætur skilaboðin scrolla upp
     }
-  });  
-});
+  }); 
 
 //Þegar það er ýtt á endurstilla takka hjá notenda síju
 endurstilla.addEventListener("click", () => {
 
   //Kem í veg fyrir það að notandinn geti ýtt oft á endurstill og fengið sama chat aftur og aftur
-  endurstilla.disabled = true;
+  //endurstilla.disabled = true;
+  if($(".chatItem")) {
+    console.log("hello");
+    $(".chatItem").remove();
+  }
+  //// Öll li í chattinu eru merkt með chatItem klasanum, þetta fjarlægjir hann, en þetta er jquery kóði
 
   //Endur geri kóðann áðan, virkar það?
   socket.emit("redo");
+});
 
-  socket.on("redo", (result) => {
-    for(let i = 0; i < result.length; i++) {
-      //býr til nýtt <li>
-      var item_chat = document.createElement('li');
-      
-      //set hérna klasa sem ég tek svo í burtu þegar ég síja eftir nafni
-      item_chat.classList.add("chatItem");
+socket.on("redo", (result) => {
+  for(let i = 0; i < result.length; i++) {
+    //býr til nýtt <li>
+    var item_chat = document.createElement('li');
+    
+    //set hérna klasa sem ég tek svo í burtu þegar ég síja eftir nafni
+    item_chat.classList.add("chatItem");
 
-      //Tekur chat_log frá server og mongo, og setur það sem li value
-      item_chat.textContent = result[i].user + ": " + result[i].message;
-      messages.appendChild(item_chat);
-      
-      window.scrollTo(0, document.body.scrollHeight);
-    }
+    //Tekur chat_log frá server og mongo, og setur það sem li value
+    item_chat.textContent = result[i].user + ": " + result[i].message;
+    messages.appendChild(item_chat);
+    
+    window.scrollTo(0, document.body.scrollHeight);
+  }
 
-  });
 });
