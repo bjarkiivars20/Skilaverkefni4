@@ -53,6 +53,11 @@ mongo.connect("mongodb://127.0.0.1/chatserver", {useUnifiedTopology: true}, func
 			}
 		});
 
+		socket.on("noUsername", () => {
+			var noUname = "Verdur ad velja notendanafn";
+			socket.emit("noUsernameFound", noUname);
+		});
+
 		socket.on("chat message", (msg) => {
 			//set skilaboðin í table í databaseinu
 			chatDB.collection("messages").insertOne({user: socket.nickname, message: msg});
@@ -92,8 +97,16 @@ mongo.connect("mongodb://127.0.0.1/chatserver", {useUnifiedTopology: true}, func
 		socket.on("searching", (searchValue) => {
 			var query = { user: searchValue }; //Skilgreini nýtt var fyrir search.value úr input fieldinu
 			chatDB.collection("messages").find(query).toArray(function(err, result) { //Sendi svo query á db of næ í nafnið sem var valið
-				socket.emit("searching", result); //Skila svo niðurstöðunni á clientinn
-				console.log(result);
+				if(err) throw err; //Ef það er eitthvað error, þá skilar hann því
+
+				if(result == "") { 
+					var skilaTomu = "Sorry það er enginn "+searchValue+" skradur";
+					console.log("Ég er tómur");
+					socket.emit("emptyResult", skilaTomu);
+				} else {
+					socket.emit("searching", result); //Skila svo niðurstöðunni á clientinn
+					console.log(result);
+				}
 			});
 		});
 	});

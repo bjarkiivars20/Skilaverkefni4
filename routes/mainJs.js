@@ -14,7 +14,8 @@ var searchForm = document.getElementById("searchForm"); //fyrir síjuformið
 var search = document.getElementById("search");
 let feedback = document.getElementById("feedback");
 let notendanafn = document.getElementById("notendanafnGildiText");
-let randomNames = ["Mr. Nice Guy","Moss","Jen Barber","Asmongold"];
+let searchError = document.getElementById("searchError");
+let noUserError = document.getElementById("noUserError");
 
 
 //Þetta er formið fyrir chattið
@@ -67,18 +68,6 @@ function synaChat() {
   showUserForm.style.display = "none";
 }
 
-//Sendir notendanafn á serverinn og felur formið ef það hefur gengið upp
-function notendanafnGildi() {
-  socket.emit("new user", notendanafn, function(data){
-    if(data) {
-      synaChat();
-    } else {
-      document.getElementById("userError").innerHTML = "Þetta notendanafn er nú þegar tekið, reyndu aftur.";
-      return;
-    }
-  });
-}
-
 //Tekur notendanöfn frá servernum og setur það í lista til að sýna currently active
 socket.on("usernames", function(data){
   document.getElementById("virkirNotendur").innerHTML = "";
@@ -123,20 +112,31 @@ window.onload = felaChat;
 //Þegar það er verið að velja notendanafn þá keyrir þetta eftir að það er ýtt á enter eða submit á takkanum
 usernameForm.addEventListener("submit", (e) => {
   e.preventDefault(); //Kemur í veg fyrir refresh
+  notendanafn = document.getElementById("notendanafnGildiText").value;
 
-  if(notendanafn.value) {
-    notendanafn = document.getElementById("notendanafnGildiText").value;
+  if(notendanafn === '') {
+    socket.emit("noUsername");
   } else {
-    let newRandom = Math.floor(Math.random() * randomNames.length);
-
-    //Ákvað að ég myndi frekar fjarlægja nafn úr listanum og ef það eru öll random nöfnin tekin, þá er bara ekkert eftir
-    notendanafn = randomNames[newRandom];
-    randomNames.splice(newRandom);
+    socket.emit("new user", notendanafn, function(data){
+      if(data) {
+        synaChat();
+      } else {
+        document.getElementById("userError").innerHTML = 'Notendanafnid ' + notendanafn + " er nú þegar tekið, reyndu aftur.";
+        setTimeout(function() {
+          document.getElementById("userError").innerHTML = "";
+        },3000); 
+        return;
+      }
+    });
   }
-  notendanafnGildi();
 });
 
-
+socket.on("noUsernameFound",  (noUname) => {
+  noUserError.innerHTML  = noUname;
+  setTimeout(function() {
+    noUserError.innerHTML = '';
+  },3000); 
+});
 
 //fer afstað þegar formið er submittað fyrir síju
 searchForm.addEventListener("submit", (e) => {
@@ -169,6 +169,14 @@ searchForm.addEventListener("submit", (e) => {
         window.scrollTo(0, document.body.scrollHeight); //Lætur skilaboðin scrolla upp
     }
   }); 
+
+  socket.on("emptyResult", (skilaTomu) => {
+    searchError.innerHTML = skilaTomu;
+    setTimeout(function() {
+      searchError.innerHTML = '';
+    },3000); 
+
+  });
 
 //Þegar það er ýtt á endurstilla takka hjá notenda síju
 endurstilla.addEventListener("click", () => {
