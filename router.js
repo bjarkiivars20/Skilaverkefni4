@@ -61,7 +61,7 @@ mongo.connect("mongodb://127.0.0.1/chatserver", {useUnifiedTopology: true}, func
 		socket.on("chat message", (msg) => {
 			//set skilaboðin í table í databaseinu
 			chatDB.collection("messages").insertOne({user: socket.nickname, message: msg});
-			io.emit("chat message",socket.nickname + " skrifaði: " + msg);
+			io.emit("chat message",socket.nickname + ": " + msg);
 		});
 
 		socket.on("redo", () => {
@@ -101,14 +101,13 @@ mongo.connect("mongodb://127.0.0.1/chatserver", {useUnifiedTopology: true}, func
 
 				if(result == "") { 
 					var skilaTomu = "Sorry það er enginn "+searchValue+" skradur";
-					console.log("Ég er tómur");
 					socket.emit("emptyResult", skilaTomu);
 				} else {
 					socket.emit("searching", result); //Skila svo niðurstöðunni á clientinn
-					console.log(result);
 				}
 			});
 		});
+
 	});
 });
 

@@ -16,7 +16,7 @@ let feedback = document.getElementById("feedback");
 let notendanafn = document.getElementById("notendanafnGildiText");
 let searchError = document.getElementById("searchError");
 let noUserError = document.getElementById("noUserError");
-
+var flagg = false;
 
 //Þetta er formið fyrir chattið
 form.addEventListener('submit', function(e) {
@@ -24,12 +24,14 @@ form.addEventListener('submit', function(e) {
   if (input.value) {
     socket.emit('chat message', input.value);
     input.value = '';
-    $(".liItem").remove();
+
+    $(".typingItem").remove();//Tekur í burt is typing..
   }
 }); 
 
 //Þessi sér um að taka history á chattinu og sýnir allt
 socket.on("chat_init", (chat_log) =>{
+
   for(var i = 0; i < chat_log.length; i++) {
     //býr til nýtt <li>
     var item_chat = document.createElement('li');
@@ -41,21 +43,29 @@ socket.on("chat_init", (chat_log) =>{
     item_chat.textContent = chat_log[i].user + ": " + chat_log[i].message;
     messages.appendChild(item_chat);
     
+    $(".typingItem").remove();//Tekur í burt is typing..
+
     window.scrollTo(0, document.body.scrollHeight);
   }
 });
 
 //Tekur skilaboð frá servernum og sendir það í <ul> <li>
 socket.on('chat message', function(msg) {
-  var item = document.createElement('li');
-  
-  item.textContent = msg;
-  messages.appendChild(item);
- 
-  $(".liItem").remove();
+  if(flagg === false) {
+    var item = document.createElement('li');
+    
+    item.textContent = msg;
+    messages.appendChild(item);
 
-  window.scrollTo(0, document.body.scrollHeight);
+    item.classList.add("chatItem");
+
+    $(".typingItem").remove();//Tekur í burt is typing..
+
+    window.scrollTo(0, document.body.scrollHeight);
+  } 
 });
+
+//socket.on("filterOnly") {}
 
 //Function til þess að fela chattið
 function felaChat() {
@@ -82,18 +92,20 @@ socket.on("usernames", function(data){
 //Bý til li item sem fer á ul þar sem chattið er
 //Set klassa á list itemið og fjarlægi það ef það er til
 socket.on("typing", function(data){
-  if(data){
-    if($(".liItem")[0]) {
-      setTimeout(function() {
-        $(".liItem").remove();//Þetta er Jquery skipun, auðveld leið til að fjarlægja klassa
-      },3000);       
-    }else {
-      let item = document.createElement("li");
+  if(flagg === false) { //Is typing sést ekki hjá þeim sem er að filtera leitina sýna
+    if(data){
+      if($(".typingItem")[0]) {
+        setTimeout(function() {
+          $(".typingItem").remove();//Þetta er Jquery skipun, auðveld leið til að fjarlægja klassa
+        },3000);       
+      }else {
+        let item = document.createElement("li");
 
-      item.textContent = data + " is typing..";
-      item.classList.add("liItem");
-      messages.appendChild(item);
-    }     
+        item.textContent = data + " is typing..";
+        item.classList.add("typingItem");
+        messages.appendChild(item);
+      }     
+    }
   }
 });
 
@@ -102,7 +114,7 @@ input.addEventListener("keydown", function() {
   socket.emit("typing", notendanafn);
 
   setTimeout(function(){
-     $(".liItem").remove()
+     $(".typingItem").remove()
   },3000);
 });
 
@@ -138,8 +150,11 @@ socket.on("noUsernameFound",  (noUname) => {
   },3000); 
 });
 
-//fer afstað þegar formið er submittað fyrir síju
+//fer afstað þegar formið er submittað fyrir síju/searchbar
 searchForm.addEventListener("submit", (e) => {
+
+  console.log(flagg);
+
   $(".chatItem").remove();// Öll li í chattinu eru merkt með chatItem klasanum, þetta fjarlægjir hann, en þetta er jquery kóði
 
   var searchValue = "";
@@ -151,7 +166,6 @@ searchForm.addEventListener("submit", (e) => {
   } else { //annars skilar hann núll til þess að koma í veg fyrir uncaught error
     searchValue = null;
   }
-  console.log(searchValue);
   //Geri það þannig að takkinn fyrir endurstillingu virki bara eftir að þetta form er submittað
   endurstilla.disabled = false;
 
@@ -161,11 +175,20 @@ searchForm.addEventListener("submit", (e) => {
 
   //tek síðan gögn frá mongo og vinn með það
   socket.on("searching", (result) => { //result er niðurstaðan sem mongo skilar
+
+    let filterUser = result;
+
+    flagg = true;
+
+    if($(".chatItem")) {
+      $(".chatItem").remove();
+    }
+
     for(let i = 0; i < result.length; i++) { //Því mongo skilar array, þá tek ég lengdina og læt for lykkju keyra sem skilar öllum niðurstöðum
-        var item_chat = document.createElement('li'); //Bý til <li>
-        item_chat.classList.add("chatItem");
-        item_chat.textContent = result[i].user + ": " + result[i].message; //Gef li value sem er tekið frá mongo
-        messages.appendChild(item_chat); //Set li sem child af ul messages
+        let item_chat_search = document.createElement('li'); //Bý til <li>
+        item_chat_search.classList.add("chatItem");
+        item_chat_search.textContent = result[i].user + ": " + result[i].message; //Gef li value sem er tekið frá mongo
+        messages.appendChild(item_chat_search); //Set li sem child af ul messages
         window.scrollTo(0, document.body.scrollHeight); //Lætur skilaboðin scrolla upp
     }
   }); 
@@ -181,10 +204,7 @@ searchForm.addEventListener("submit", (e) => {
 //Þegar það er ýtt á endurstilla takka hjá notenda síju
 endurstilla.addEventListener("click", () => {
 
-  //Kem í veg fyrir það að notandinn geti ýtt oft á endurstill og fengið sama chat aftur og aftur
-  //endurstilla.disabled = true;
   if($(".chatItem")) {
-    console.log("hello");
     $(".chatItem").remove();
   }
   //// Öll li í chattinu eru merkt með chatItem klasanum, þetta fjarlægjir hann, en þetta er jquery kóði
@@ -194,6 +214,9 @@ endurstilla.addEventListener("click", () => {
 });
 
 socket.on("redo", (result) => {
+
+  flagg = false;
+
   for(let i = 0; i < result.length; i++) {
     //býr til nýtt <li>
     var item_chat = document.createElement('li');
@@ -207,5 +230,5 @@ socket.on("redo", (result) => {
     
     window.scrollTo(0, document.body.scrollHeight);
   }
-
 });
+

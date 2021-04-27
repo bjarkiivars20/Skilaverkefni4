@@ -56,8 +56,9 @@ body {
 
 #virkirNotendur {
     position:absolute; 
-    right:200px; 
-    top:100px;
+    right:594px; 
+    top:50px;
+    font-size:32px;
 }
 
 #userForm { 
